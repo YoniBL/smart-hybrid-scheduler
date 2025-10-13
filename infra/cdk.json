@@ -1,0 +1,10 @@
+{
+  "app": "python3 app.py",
+  "context": {
+    "@aws-cdk/core:newStyleStackSynthesis": true,
+    "stackName": "SmartHybridScheduler",
+    "domainName": "",
+    "enableCloudFront": true
+  }
+}
+

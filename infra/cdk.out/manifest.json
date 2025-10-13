@@ -1,0 +1,263 @@
+{
+  "version": "36.0.0",
+  "artifacts": {
+    "SmartHybridScheduler.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "SmartHybridScheduler.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "SmartHybridScheduler": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://536580887554/il-central-1",
+      "properties": {
+        "templateFile": "SmartHybridScheduler.template.json",
+        "terminationProtection": false,
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::536580887554:role/cdk-hnb659fds-deploy-role-536580887554-il-central-1",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::536580887554:role/cdk-hnb659fds-cfn-exec-role-536580887554-il-central-1",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-536580887554-il-central-1/d7b0c7bfaef34a269be48913f0d180df08bfe086f0a91d80f1e1824312f40eb2.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "SmartHybridScheduler.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::536580887554:role/cdk-hnb659fds-lookup-role-536580887554-il-central-1",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "SmartHybridScheduler.assets"
+      ],
+      "metadata": {
+        "/SmartHybridScheduler/AppTable/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AppTable815C50BC"
+          }
+        ],
+        "/SmartHybridScheduler/UserPool/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserPool6BA7E5F2"
+          }
+        ],
+        "/SmartHybridScheduler/UserPool/WebClient/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserPoolWebClient4C9370B0"
+          }
+        ],
+        "/SmartHybridScheduler/ApiLambda/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiLambdaServiceRole1CC7D0F3"
+          }
+        ],
+        "/SmartHybridScheduler/ApiLambda/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiLambdaServiceRoleDefaultPolicyF1B57697"
+          }
+        ],
+        "/SmartHybridScheduler/ApiLambda/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiLambda91D2282D"
+          }
+        ],
+        "/SmartHybridScheduler/HttpApi/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiF5A9A8A7"
+          }
+        ],
+        "/SmartHybridScheduler/HttpApi/CloudWatchRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiCloudWatchRole6E8B73F8"
+          }
+        ],
+        "/SmartHybridScheduler/HttpApi/Account": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiAccount2C8D4A9D"
+          }
+        ],
+        "/SmartHybridScheduler/HttpApi/Deployment/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiDeployment2ABEB12F050a735263926f2e1a55fc5f6caffb43"
+          }
+        ],
+        "/SmartHybridScheduler/HttpApi/DeploymentStage.prod/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiDeploymentStageprod7B463A5A"
+          }
+        ],
+        "/SmartHybridScheduler/HttpApi/Endpoint": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiEndpoint9EC6E18F"
+          }
+        ],
+        "/SmartHybridScheduler/HttpApi/Default/{proxy+}/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiproxy94E79708"
+          }
+        ],
+        "/SmartHybridScheduler/HttpApi/Default/{proxy+}/ANY/ApiPermission.SmartHybridSchedulerHttpApi677AB583.ANY..{proxy+}": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiproxyANYApiPermissionSmartHybridSchedulerHttpApi677AB583ANYproxyCDC0137F"
+          }
+        ],
+        "/SmartHybridScheduler/HttpApi/Default/{proxy+}/ANY/ApiPermission.Test.SmartHybridSchedulerHttpApi677AB583.ANY..{proxy+}": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiproxyANYApiPermissionTestSmartHybridSchedulerHttpApi677AB583ANYproxy3F325D5F"
+          }
+        ],
+        "/SmartHybridScheduler/HttpApi/Default/{proxy+}/ANY/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiproxyANY815AF451"
+          }
+        ],
+        "/SmartHybridScheduler/HttpApi/Default/ANY/ApiPermission.SmartHybridSchedulerHttpApi677AB583.ANY..": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiANYApiPermissionSmartHybridSchedulerHttpApi677AB583ANY01139F9D"
+          }
+        ],
+        "/SmartHybridScheduler/HttpApi/Default/ANY/ApiPermission.Test.SmartHybridSchedulerHttpApi677AB583.ANY..": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiANYApiPermissionTestSmartHybridSchedulerHttpApi677AB583ANY80676C5B"
+          }
+        ],
+        "/SmartHybridScheduler/HttpApi/Default/ANY/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiANYF0D93410"
+          }
+        ],
+        "/SmartHybridScheduler/SiteBucket/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SiteBucket397A1860"
+          }
+        ],
+        "/SmartHybridScheduler/SiteBucket/Policy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SiteBucketPolicy3AC1D0F8"
+          }
+        ],
+        "/SmartHybridScheduler/SiteBucket/AutoDeleteObjectsCustomResource/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SiteBucketAutoDeleteObjectsCustomResource9585E968"
+          }
+        ],
+        "/SmartHybridScheduler/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+          }
+        ],
+        "/SmartHybridScheduler/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F"
+          }
+        ],
+        "/SmartHybridScheduler/SiteOAI/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SiteOAI1F7E9870"
+          }
+        ],
+        "/SmartHybridScheduler/WebDistribution/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WebDistribution59C46482"
+          }
+        ],
+        "/SmartHybridScheduler/DailyRule/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DailyRule7A0FEF67"
+          }
+        ],
+        "/SmartHybridScheduler/DailyRule/AllowEventRuleSmartHybridSchedulerApiLambdaDF6C4597": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DailyRuleAllowEventRuleSmartHybridSchedulerApiLambdaDF6C459732E0912B"
+          }
+        ],
+        "/SmartHybridScheduler/ApiUrl": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiUrl"
+          }
+        ],
+        "/SmartHybridScheduler/BucketName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BucketName"
+          }
+        ],
+        "/SmartHybridScheduler/CloudFrontURL": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CloudFrontURL"
+          }
+        ],
+        "/SmartHybridScheduler/UserPoolId": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserPoolId"
+          }
+        ],
+        "/SmartHybridScheduler/UserPoolClientId": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserPoolClientId"
+          }
+        ],
+        "/SmartHybridScheduler/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/SmartHybridScheduler/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/SmartHybridScheduler/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "SmartHybridScheduler"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  }
+}
