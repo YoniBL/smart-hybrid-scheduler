@@ -1,0 +1,136 @@
+/* Inter font (light-first) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  --bg: #ffffff;
+  --fg: #0f172a;        /* slate-900 */
+  --muted: #64748b;     /* slate-500 */
+  --surface: #f8fafc;   /* slate-50 */
+  --surface-2: #f1f5f9; /* slate-100 */
+  --border: #e5e7eb;    /* gray-200 */
+  --brand: #2563eb;     /* blue-600 */
+  --brand-weak: #eff6ff;/* blue-50 */
+  --focus: 0 0 0 3px rgba(37, 99, 235, .25);
+
+  --radius: 12px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 6px 18px rgba(0,0,0,.10);
+
+  --hour: 48px; /* hour row height */
+}
+
+/* Base typography & layout rhythm */
+html, body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial; color: var(--fg); background: var(--bg); }
+h1, h2, h3, h4 { font-weight: 600; margin: 0 0 8px; }
+p { margin: 0 0 8px; line-height: 1.45; }
+small { color: var(--muted); }
+
+/* Buttons & inputs */
+button { font: inherit; border-radius: 10px; padding: 6px 10px; border: 1px solid var(--border); background: var(--surface); color: var(--fg); }
+button:hover { filter: brightness(0.985); }
+button:focus-visible { outline: none; box-shadow: var(--focus); }
+.btn { padding: 6px 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); }
+.btn.primary { background: var(--brand); color: white; border-color: transparent; }
+.btn.ghost { background: transparent; }
+.btn.danger { background: #dc2626; color: white; border-color: transparent; }
+
+input, select, textarea {
+  font: inherit; border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; box-shadow: var(--focus); }
+
+/* App chrome */
+.topbar { background: var(--bg); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 20; }
+.main { display: grid; grid-template-columns: 1fr 320px; gap: 16px; padding: 12px; }
+.left { background: var(--bg); }
+.right { background: var(--bg); }
+
+/* Calendar */
+.cal { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--bg); }
+.cal-head { display: grid; grid-template-columns: 80px repeat(7, 1fr); background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 5; }
+.time-col { width: 80px; border-right: 1px solid var(--border); background: var(--surface); }
+.day-head { padding: 10px 8px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.cal-body { display: grid; grid-template-columns: 80px repeat(7, 1fr); }
+
+.time-cell, .grid-cell { height: var(--hour); border-bottom: 1px solid var(--border); }
+.grid-cell:nth-child(2n) { background: var(--surface-2); } /* subtle every 2 hours */
+.grid-cell:first-child, .time-cell:first-child { border-top: 1px solid var(--border); }
+
+.cal-scroll { max-height: calc(100vh - 168px); overflow-y: auto; position: relative; }
+
+.day-col { position: relative; }
+.event {
+  position: absolute; padding: 6px 10px;
+  border-radius: 10px; color: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+.event:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.event .event-title { font-weight: 600; font-size: 13px; }
+.event .event-time { font-size: 12px; opacity: .9; }
+
+/* Use data-color for the event background. We compute a subtle overlay for readability. */
+.event[data-color] {
+  background: color-mix(in oklab, var(--event-color, #2563eb) 86%, white);
+  border: 1px solid color-mix(in oklab, var(--event-color, #2563eb) 60%, white);
+}
+/* Left accent stripe (like Apple/Google) */
+.event::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--event-color, #2563eb); border-top-left-radius: 10px; border-bottom-left-radius: 10px;
+}
+
+.ev-actions {
+  position: absolute; top: 4px; right: 4px; display: flex; gap: 4px; opacity: 0; transition: opacity .12s ease;
+}
+.event:hover .ev-actions { opacity: 1; }
+.ev-actions button {
+  border: none; background: rgba(0,0,0,.25); color: white; border-radius: 6px; padding: 2px 6px;
+}
+.ev-actions button:hover { background: rgba(0,0,0,.4); }
+
+/* Create selection preview */
+.create-preview {
+  position: absolute; left: 8px; right: 8px;
+  background: rgba(37, 99, 235, .16);
+  border: 1px dashed rgba(37, 99, 235, .55);
+  border-radius: 10px; pointer-events: none;
+}
+
+/* Now line */
+.now-line { position: absolute; left: 0; right: 0; height: 2px; background: #ef4444; pointer-events: none; z-index: 2; }
+
+/* Panels */
+.card { background: var(--bg); border: 1px solid var(--border); box-shadow: var(--shadow-sm); border-radius: var(--radius); }
+.form-row { display: grid; grid-template-columns: 80px 1fr; align-items: center; gap: 8px; margin-bottom: 10px; }
+.actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* Quick add button in header */
+.quick-add { border: 1px solid var(--border); background: var(--bg); border-radius: 8px; width: 26px; height: 26px; line-height: 24px; }
+.quick-add:hover { filter: brightness(0.98); }
+
+/* Suggestion/NLP input box (make it clean) */
+.nlp-box { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+.nlp-box input { border: none; background: transparent; padding: 8px; }
+.nlp-box input:focus-visible { box-shadow: none; outline: none; }
+.nlp-box button { border-radius: 10px; }
+
+/* Tasks list light polish */
+.tasks-panel { border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; }
+.tasks-panel h3 { font-size: 16px; }
+
+/* Dark mode fallback just in case */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0f13;
+    --fg: #e5e7eb;
+    --muted: #9ca3af;
+    --surface: #0f1521;
+    --surface-2: #0c111b;
+    --border: #1f2937;
+  }
+  .event[data-color] {
+    background: color-mix(in oklab, var(--event-color, #2563eb) 72%, black);
+    border-color: color-mix(in oklab, var(--event-color, #2563eb) 40%, black);
+  }
+}

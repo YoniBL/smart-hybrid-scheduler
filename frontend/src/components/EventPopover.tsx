@@ -6,6 +6,8 @@ type Props = {
   onClose: () => void;
   onSave: (updates: { title: string; startISO: string; endISO: string }) => Promise<void>;
   onDelete: () => Promise<void>;
+  getColor?: (id: string) => string;
+  setColor?: (id: string, color: string) => void;
 };
 
 function toLocalInputValue(iso: string) {
@@ -19,19 +21,23 @@ function toLocalInputValue(iso: string) {
   return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
 }
 
-export default function EventPopover({ event, onClose, onSave, onDelete }: Props) {
+const PALETTE = ["#2563eb", "#22c55e", "#f59e0b", "#ef4444", "#a855f7", "#14b8a6", "#6b7280"];
+
+export default function EventPopover({ event, onClose, onSave, onDelete, getColor, setColor }: Props) {
   const [title, setTitle] = useState("");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [busy, setBusy] = useState(false);
+  const [color, setLocalColor] = useState<string>("");
 
   useEffect(() => {
     if (event) {
       setTitle(event.title);
       setStart(toLocalInputValue(event.startISO));
       setEnd(toLocalInputValue(event.endISO));
+      setLocalColor(getColor ? getColor(event.eventId) : "");
     }
-  }, [event]);
+  }, [event, getColor]);
 
   if (!event) return null;
 
@@ -42,11 +48,31 @@ export default function EventPopover({ event, onClose, onSave, onDelete }: Props
         <div className="form-row"><label>Title</label><input value={title} onChange={e => setTitle(e.target.value)} /></div>
         <div className="form-row"><label>Start</label><input type="datetime-local" value={start} onChange={e => setStart(e.target.value)} /></div>
         <div className="form-row"><label>End</label><input type="datetime-local" value={end} onChange={e => setEnd(e.target.value)} /></div>
+        <div className="form-row">
+          <label>Color</label>
+          <div style={{display:"flex", gap:8, flexWrap:"wrap"}}>
+            {PALETTE.map(c => (
+              <button key={c}
+                aria-label={`Pick ${c}`}
+                onClick={() => setLocalColor(c)}
+                style={{
+                  width: 24, height: 24, borderRadius: 9999, border: color===c ? "2px solid #111" : "1px solid #ddd",
+                  background: c, cursor: "pointer"
+                }}
+              />
+            ))}
+            <input type="color" value={color || "#2563eb"} onChange={e => setLocalColor(e.target.value)} style={{marginLeft:8}}/>
+          </div>
+        </div>
 
         <div className="actions">
-          <button onClick={async () => {
+          <button className="btn danger" onClick={async () => { setBusy(true); try { await onDelete(); onClose(); } finally { setBusy(false); } }} disabled={busy}>Delete</button>
+          <div style={{ flex: 1 }} />
+          <button className="btn" onClick={onClose} disabled={busy}>Close</button>
+          <button className="btn primary" onClick={async () => {
             setBusy(true);
             try {
+              if (setColor) setColor(event.eventId, color || "#2563eb");
               await onSave({
                 title,
                 startISO: new Date(start).toISOString().replace(/\.\d{3}Z$/, "Z"),
@@ -55,8 +81,6 @@ export default function EventPopover({ event, onClose, onSave, onDelete }: Props
               onClose();
             } finally { setBusy(false); }
           }} disabled={busy}>Save</button>
-          <button onClick={async () => { setBusy(true); try { await onDelete(); onClose(); } finally { setBusy(false); } }} disabled={busy}>Delete</button>
-          <button onClick={onClose} disabled={busy}>Close</button>
         </div>
       </div>
     </div>

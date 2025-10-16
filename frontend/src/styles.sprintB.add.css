@@ -1,0 +1,20 @@
+/* Hover actions inside events */
+.event { position: absolute; padding: 6px 8px 6px 8px; color: white; cursor: pointer; }
+.ev-actions {
+  position: absolute; top: 4px; right: 4px; display: flex; gap: 4px; opacity: 0; transition: opacity .12s ease;
+}
+.event:hover .ev-actions { opacity: 1; }
+.ev-actions button {
+  border: none; background: rgba(0,0,0,.25); color: white; border-radius: 6px; padding: 2px 6px;
+}
+.ev-actions button:hover { background: rgba(0,0,0,.4); }
+
+/* Create selection preview */
+.create-preview {
+  position: absolute;
+  left: 8px; right: 8px;
+  background: rgba(37, 99, 235, .2);
+  border: 1px dashed rgba(37, 99, 235, .8);
+  border-radius: 8px;
+  pointer-events: none;
+}
