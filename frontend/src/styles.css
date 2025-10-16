@@ -1,0 +1,66 @@
+@import "./styles.tokens.css";
+
+body { margin: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial; color: #222; }
+* { box-sizing: border-box; }
+
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #eee; }
+.nav { display: flex; align-items: center; gap: 8px; }
+.nav button { padding: 4px 8px; }
+
+.main { display: grid; grid-template-columns: 1fr 340px; gap: 16px; padding: 16px; }
+
+.left { display: flex; flex-direction: column; gap: 12px; }
+.right { position: relative; }
+
+.nlp-form { display: flex; gap: 8px; }
+.nlp-form input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
+.nlp-form button { padding: 8px 12px; }
+
+.cal { border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
+.cal-head { display: grid; grid-template-columns: 64px repeat(7, 1fr); background: #fafafa; border-bottom: 1px solid #eee; }
+.time-col { width: 64px; }
+.time-cell { height: 48px; font-size: 12px; color: #777; display: flex; align-items: center; justify-content: center; border-bottom: 1px dashed #f0f0f0; }
+.day-head { padding: 8px; font-weight: 600; border-left: 1px solid #eee; }
+.cal-body { display: grid; grid-template-columns: 64px repeat(7, 1fr); position: relative; }
+.day-col { position: relative; border-left: 1px solid #f3f3f3; min-height: calc(48px * 13); }
+.grid-cell { height: 48px; border-bottom: 1px dashed #f7f7f7; }
+.event { position: absolute; left: 8px; right: 8px; background: #3b82f6; color: white; border-radius: 6px; padding: 6px 8px; box-shadow: 0 2px 6px rgba(0,0,0,.1); }
+.event-title { font-weight: 600; font-size: 12px; }
+.event-time { font-size: 11px; opacity: .9; }
+
+.tasks-panel { border: 1px solid #eee; border-radius: 8px; padding: 12px; }
+.task-form { display: flex; gap: 8px; margin-bottom: 8px; }
+.task-form input { padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
+.task-form button { padding: 8px 12px; }
+.tasks-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.task-row { display: flex; align-items: center; justify-content: space-between; padding: 8px; border: 1px solid #eee; border-radius: 6px; }
+.task-title { font-weight: 600; }
+.task-sub { color: #777; font-size: 12px; }
+.task-actions { display: flex; gap: 8px; }
+.task-actions button { padding: 6px 10px; }
+
+.loading { position: fixed; bottom: 12px; right: 12px; background: #111; color: #fff; padding: 8px 10px; border-radius: 6px; }
+
+.suggest-modal { position: fixed; inset: 0; background: rgba(0,0,0,.25); display: flex; align-items: center; justify-content: center; }
+.suggest-card { background: #fff; width: 420px; max-width: 92vw; padding: 16px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.15); }
+.sug-list { list-style: none; padding: 0; margin: 12px 0; display: flex; flex-direction: column; gap: 8px; }
+.sug-list li { display: flex; align-items: center; justify-content: space-between; border: 1px solid #eee; border-radius: 6px; padding: 8px; }
+.sug-sub { color: #777; font-size: 12px; }
+.suggest-card .close { margin-top: 8px; }
+/* Month view */
+.month { border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
+.month-head { display: grid; grid-template-columns: repeat(7, 1fr); background: #fafafa; border-bottom: 1px solid #eee; }
+.mhd { padding: 8px; font-weight: 600; text-align: center; }
+.month-body { display: grid; grid-template-columns: repeat(7, 1fr); }
+.mcell { min-height: 100px; border-left: 1px solid #f3f3f3; border-bottom: 1px solid #f3f3f3; padding: 6px; }
+.mcell.other { background: #fcfcfc; color: #777; }
+.mdn { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+.mlist { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px; }
+.mitem { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Event edit modal */
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.28); display: flex; align-items: center; justify-content: center; }
+.card { background: #fff; width: 420px; max-width: 92vw; padding: 16px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.15); }
+.form-row { display: grid; grid-template-columns: 80px 1fr; align-items: center; gap: 8px; margin-bottom: 8px; }
+.form-row input { padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
+.actions { display: flex; gap: 8px; justify-content: flex-end; }

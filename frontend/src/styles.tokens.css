@@ -1,0 +1,40 @@
+/* --- Design tokens & dark mode --- */
+:root {
+  --bg: #ffffff;
+  --fg: #111827;
+  --muted: #6b7280;
+  --brand: #2563eb;
+  --surface: #f9fafb;
+  --border: #e5e7eb;
+  --radius: 10px;
+  --shadow: 0 6px 18px rgba(0,0,0,.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0f13;
+    --fg: #e5e7eb;
+    --muted: #9ca3af;
+    --brand: #3b82f6;
+    --surface: #111827;
+    --border: #1f2937;
+    --shadow: 0 6px 18px rgba(0,0,0,.35);
+  }
+}
+
+/* Apply tokens */
+body { background: var(--bg); color: var(--fg); }
+.cal, .tasks-panel, .settings-panel { border-color: var(--border); background: var(--bg); }
+.day-head { background: var(--surface); }
+.event { background: var(--brand); box-shadow: 0 2px 6px rgba(0,0,0,.1); border-radius: var(--radius); }
+.event-title { font-weight: 600; }
+.event:hover { box-shadow: var(--shadow); transform: translateY(-1px); transition: box-shadow .15s ease, transform .15s ease; }
+
+/* Scrollable calendar body */
+.cal-scroll { max-height: calc(100vh - 180px); overflow-y: auto; position: relative; }
+
+/* 24h rows keep a steady rhythm; adjust if you want denser grid */
+.time-cell, .grid-cell { height: 48px; }
+
+/* Current time indicator */
+.now-line { position: absolute; left: 0; right: 0; height: 2px; background: #ef4444; pointer-events: none; z-index: 2; }
