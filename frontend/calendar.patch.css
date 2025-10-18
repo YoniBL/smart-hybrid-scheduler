@@ -1,0 +1,26 @@
+
+/* PATCH: full-width layout + subtler 'today' highlight */
+:root {
+  --today-tint: rgba(37, 99, 235, 0.06);
+  --today-pill-bg: #2563eb;
+  --today-pill-fg: #ffffff;
+}
+
+.container { max-width: none; width: 100%; margin: 0; padding: 0 12px; }
+
+.day-col.today {
+  background-image: none;
+  background-color: var(--today-tint);
+}
+.day-col.today::after { content: none; }
+
+.day-head.today .weekday {
+  background: var(--today-pill-bg);
+  color: var(--today-pill-fg);
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+.day-head.today .date {
+  color: var(--today-pill-bg);
+  font-weight: 700;
+}

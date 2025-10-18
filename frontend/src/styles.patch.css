@@ -1,0 +1,27 @@
+
+:root{
+  --topbar-h: 56px;
+  --page-pad: 12px;
+  --sidebar-w: 320px;
+  --hour: 48px;
+}
+.container{ width: clamp(1024px, 96vw, 1280px); margin: 0 auto; padding: 0 var(--page-pad); }
+.main{ display: grid; grid-template-columns: 1fr var(--sidebar-w); gap: 16px; height: calc(100vh - var(--topbar-h) - (var(--page-pad) * 2)); }
+.topbar{ min-height: var(--topbar-h); }
+.left, .right{ display: flex; flex-direction: column; min-height: 0; }
+.cal{ flex: 1 1 auto; display:flex; flex-direction: column; min-height: 0; }
+.cal-body.cal-scroll{ flex: 1 1 auto; height: auto; overflow-y: auto; }
+.day-col.today{ background: none; position: relative; }
+.day-col.today::before{ content:""; position:absolute; top:0; bottom:0; left:0; width:3px; background:#2563eb; border-top-left-radius:6px; border-bottom-left-radius:6px; opacity:.8; }
+.day-head.today .weekday::after{ content:""; display:inline-block; width:6px; height:6px; margin-left:6px; background:#2563eb; border-radius:999px; vertical-align: middle; }
+@media (prefers-reduced-motion: no-preference){
+  .event{ transition: transform .16s ease, box-shadow .16s ease; }
+  .event:hover{ transform: translateY(-1px); }
+  .modal[data-anim]{ animation: fadeIn .14s ease both; }
+  .modal[data-anim] .card{ animation: popIn .16s ease both; }
+  @keyframes fadeIn{ from{ opacity:0 } to{ opacity:1 } }
+  @keyframes popIn{ from{ transform: scale(.98); opacity:.0 } to{ transform: scale(1); opacity:1 } }
+  .btn, input, .nlp-box{ transition: box-shadow .12s ease, background-color .12s ease, border-color .12s ease; }
+  .btn:active{ transform: translateY(1px); }
+}
+.time-cell .hh{ top:0; transform: translateY(-50%); }

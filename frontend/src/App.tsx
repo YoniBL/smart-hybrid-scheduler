@@ -4,6 +4,7 @@ import MonthGrid from "./components/MonthGrid";
 import TasksPanel from "./components/TasksPanel";
 import NlpInput from "./components/NlpInput";
 import EventPopover from "./components/EventPopover";
+import NewEventModal from "./components/NewEventModal";
 import { getEvents, updateEvent, deleteEvent, createEvent } from "./api";
 import type { EventItem } from "./types";
 import { startOfWeek, addDays, toISO, clampToNow } from "./utils";
@@ -18,7 +19,7 @@ function AppInner() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<EventItem | null>(null);
-  const [scrollToNowFn, setScrollToNowFn] = useState<(() => void) | null>(null);
+  const [newRange, setNewRange] = useState<{s: string, e: string} | null>(null);
   const { show } = useToasts();
   const { getColor, setColor } = useEventColors();
 
@@ -49,60 +50,61 @@ function AppInner() {
   return (
     <div className="app">
       <header className="topbar">
-        <h2>Smart Hybrid Scheduler</h2>
-        <div className="nav">
-          <button className="btn ghost" onClick={() => nav(-1)}>◀</button>
-          <span style={{minWidth: 260, textAlign: "center"}}>
-            {view === "day" && weekStart.toLocaleDateString()}
-            {view === "week" && `${weekStart.toLocaleDateString()} – ${addDays(weekStart, 6).toLocaleDateString()}`}
-            {view === "month" && `${weekStart.toLocaleString(undefined, {month: "long", year: "numeric"})}`}
-          </span>
-          <button className="btn ghost" onClick={() => nav(1)}>▶</button>
-          <div style={{ marginLeft: 8, display: "inline-flex", gap: 6 }}>
-            <button className="btn ghost" onClick={() => setView("day")}>Day</button>
-            <button className="btn ghost" onClick={() => setView("week")}>Week</button>
-            <button className="btn ghost" onClick={() => setView("month")}>Month</button>
-          </div>
-          <div style={{ marginLeft: 12 }}>
-            <button className="btn primary" onClick={() => scrollToNowFn && scrollToNowFn()}>Jump to Now</button>
+        <div className="container">
+          <div className="nav" style={{display:"flex", alignItems:"center", gap:8, padding:"10px 0"}}>
+            <h2 style={{marginRight:8}}>Smart Hybrid Scheduler</h2>
+            <button className="btn ghost" onClick={() => nav(-1)}>◀</button>
+            <span style={{minWidth: 240, textAlign: "center"}}>
+              {view === "day" && weekStart.toLocaleDateString()}
+              {view === "week" && `${weekStart.toLocaleDateString()} – ${addDays(weekStart, 6).toLocaleDateString()}`}
+              {view === "month" && `${weekStart.toLocaleString(undefined, {month: "long", year: "numeric"})}`}
+            </span>
+            <button className="btn ghost" onClick={() => nav(1)}>▶</button>
+            <div style={{ marginLeft: 8, display: "inline-flex", gap: 6 }}>
+              <button className="btn ghost" onClick={() => setView("day")}>Day</button>
+              <button className="btn ghost" onClick={() => setView("week")}>Week</button>
+              <button className="btn ghost" onClick={() => setView("month")}>Month</button>
+            </div>
           </div>
         </div>
       </header>
 
-      <div className="main">
-        <div className="left">
-          <div className="nlp-box"><NlpInput onAddedEvent={refreshEvents} /><button className="btn primary" onClick={refreshEvents}>Refresh</button></div>
-          {view === "month" ? (
-            <MonthGrid monthStart={weekStart} events={events} />
-          ) : (
-            <CalendarGrid
-              weekStart={weekStart}
-              events={events}
-              daysToShow={view === "day" ? 1 : 7}
-              onEventClick={setSelected}
-              registerScrollToNow={(fn) => setScrollToNowFn(() => fn)}
-              onCreateEvent={async (s, e) => {
-                await createEvent({ title: "New event", startISO: s, endISO: e, immutable: true, source: "app" });
-                await refreshEvents();
-                show("success", "Event created");
-              }}
-              onUpdateEvent={async (id, s, e) => {
-                await updateEvent(id, { startISO: s, endISO: e });
-                await refreshEvents();
-                show("success", "Event updated");
-              }}
-              onDeleteEvent={async (id) => {
-                await deleteEvent(id);
-                await refreshEvents();
-                show("success", "Event deleted");
-              }}
-              getEventColor={getColor}
-            />
-          )}
-        </div>
-        <div className="right">
-          <div className="card tasks-panel">
-            <TasksPanel onAddedEvent={refreshEvents} />
+      <div className="container">
+        <div className="main">
+          <div className="left">
+            <div className="nlp-box"><NlpInput onAddedEvent={refreshEvents} /><button className="btn primary" onClick={refreshEvents}>Refresh</button></div>
+            {view === "month" ? (
+              <MonthGrid monthStart={weekStart} events={events} />
+            ) : (
+              <CalendarGrid
+                weekStart={weekStart}
+                events={events}
+                daysToShow={view === "day" ? 1 : 7}
+                onEventClick={setSelected}
+                onCreateEvent={async (title, s, e) => {
+                  await createEvent({ title, startISO: s, endISO: e, immutable: true, source: "app" });
+                  await refreshEvents();
+                  show("success", "Event created");
+                }}
+                onUpdateEvent={async (id, s, e) => {
+                  await updateEvent(id, { startISO: s, endISO: e });
+                  await refreshEvents();
+                  show("success", "Event updated");
+                }}
+                onDeleteEvent={async (id) => {
+                  await deleteEvent(id);
+                  await refreshEvents();
+                  show("success", "Event deleted");
+                }}
+                getEventColor={getColor}
+                onOpenQuickNew={(s, e) => setNewRange({s, e})}
+              />
+            )}
+          </div>
+          <div className="right">
+            <div className="card tasks-panel">
+              <TasksPanel onAddedEvent={refreshEvents} />
+            </div>
           </div>
         </div>
       </div>
@@ -126,8 +128,20 @@ function AppInner() {
         />
       )}
 
-      <Toaster />
+      {newRange && (
+        <NewEventModal
+          defaultStartISO={newRange.s}
+          defaultEndISO={newRange.e}
+          onClose={() => setNewRange(null)}
+          onCreate={async (title, s, e) => {
+            await createEvent({ title, startISO: s, endISO: e, immutable: true, source: "app" });
+            await refreshEvents();
+            show("success", "Event created");
+          }}
+        />
+      )}
 
+      <Toaster />
       {loading && <div className="loading">Loading…</div>}
     </div>
   );

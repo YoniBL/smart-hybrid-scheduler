@@ -2,6 +2,8 @@
 @import "./styles.sprintB.add.css";
 @import "./styles.sprintC.add.css";
 @import "../calendar.theme.css";
+@import "../calendar.patch.css";
+@import "./styles.patch.css";
 
 body { margin: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial; color: #222; }
 * { box-sizing: border-box; }
@@ -67,3 +69,62 @@ body { margin: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto
 .form-row { display: grid; grid-template-columns: 80px 1fr; align-items: center; gap: 8px; margin-bottom: 8px; }
 .form-row input { padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
 .actions { display: flex; gap: 8px; justify-content: flex-end; }
+/* PATCH: full-width layout + subtler 'today' highlight */
+:root {
+  /* --today-tint: rgba(37, 99, 235, 0.06); */
+  --today-pill-bg: #2563eb;
+  --today-pill-fg: #ffffff;
+}
+
+.container { max-width: none; width: 100%; margin: 0; padding: 0 12px; }
+
+
+.day-head.today .weekday {
+  background: var(--today-pill-bg);
+  color: var(--today-pill-fg);
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+.day-head.today .date {
+  color: var(--today-pill-bg);
+  font-weight: 700;
+}
+/* ==== Screen-fit: width + height (all monitors) ==== */
+
+/* Make the viewport sizing predictable */
+html, body, #root { height: 100%; }
+body { margin: 0; overflow-x: hidden; }
+
+/* Top bar actual height; adjust if yours differs */
+:root {
+  --topbar-h: 56px;
+  --page-pad: 12px;
+  --sidebar-w: 320px;   /* tasks panel width */
+  --hour: 48px;         /* row height per hour */
+}
+
+/* Fill width without getting “too wide” or causing horizontal scroll */
+.container {
+  width: 100%;
+  max-width: 100vw;
+  margin: 0 auto;
+  padding: 0 var(--page-pad);
+}
+
+/* Two-column layout that fills the viewport height exactly */
+.main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--sidebar-w);
+  gap: 16px;
+  height: calc(100vh - var(--topbar-h) - var(--page-pad)*2);
+}
+
+/* Ensure children can grow/shrink correctly */
+.left, .right { display: flex; flex-direction: column; min-height: 0; }
+.cal { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+
+/* The scrollable grid area fills all remaining height */
+.cal-body.cal-scroll { flex: 1 1 auto; height: auto; overflow-y: auto; }
+
+/* Keep hour labels sitting on the boundary line */
+.time-cell .hh { top: 0; transform: translateY(-50%); }
