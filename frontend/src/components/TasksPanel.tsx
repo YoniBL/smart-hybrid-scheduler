@@ -122,7 +122,6 @@ export default function TasksPanel({ onAddedEvent }: Props) {
                       {new Date(s.startISO).toLocaleString()} →{" "}
                       {new Date(s.endISO).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </div>
-                    <div className="sug-sub">score {s.score}</div>
                   </div>
                   <button onClick={() => onAcceptSuggestion(s)} disabled={loading}>Add</button>
                 </li>

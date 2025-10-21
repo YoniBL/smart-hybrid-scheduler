@@ -25,3 +25,9 @@
   .btn:active{ transform: translateY(1px); }
 }
 .time-cell .hh{ top:0; transform: translateY(-50%); }
+/* put this AFTER calendar.theme.css (you already import styles.patch.css last) */
+.card.tasks-panel {
+  min-width: 0 !important;
+  width: 100% !important;   /* ensures it fits the sidebar exactly */
+  box-sizing: border-box;
+}

@@ -2,25 +2,30 @@
 @import "./styles.sprintB.add.css";
 @import "./styles.sprintC.add.css";
 @import "../calendar.theme.css";
+@import "../calendar.beige-theme.css";  
 @import "../calendar.patch.css";
 @import "./styles.patch.css";
-
+@import "./calendar.animations.css";
+/* base */
 body { margin: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial; color: #222; }
 * { box-sizing: border-box; }
 
+/* ---------- Top bar ---------- */
 .topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #eee; }
 .nav { display: flex; align-items: center; gap: 8px; }
 .nav button { padding: 4px 8px; }
 
+/* ---------- Original grid (kept) ---------- */
 .main { display: grid; grid-template-columns: 1fr 340px; gap: 16px; padding: 16px; }
-
 .left { display: flex; flex-direction: column; gap: 12px; }
 .right { position: relative; }
 
+/* ---------- Inputs / NLP ---------- */
 .nlp-form { display: flex; gap: 8px; }
 .nlp-form input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
 .nlp-form button { padding: 8px 12px; }
 
+/* ---------- Calendar ---------- */
 .cal { border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
 .cal-head { display: grid; grid-template-columns: 64px repeat(7, 1fr); background: #fafafa; border-bottom: 1px solid #eee; }
 .time-col { width: 64px; }
@@ -33,6 +38,7 @@ body { margin: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto
 .event-title { font-weight: 600; font-size: 12px; }
 .event-time { font-size: 11px; opacity: .9; }
 
+/* ---------- Tasks ---------- */
 .tasks-panel { border: 1px solid #eee; border-radius: 8px; padding: 12px; }
 .task-form { display: flex; gap: 8px; margin-bottom: 8px; }
 .task-form input { padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
@@ -44,14 +50,17 @@ body { margin: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto
 .task-actions { display: flex; gap: 8px; }
 .task-actions button { padding: 6px 10px; }
 
+/* ---------- Misc ---------- */
 .loading { position: fixed; bottom: 12px; right: 12px; background: #111; color: #fff; padding: 8px 10px; border-radius: 6px; }
 
+/* Suggest modal */
 .suggest-modal { position: fixed; inset: 0; background: rgba(0,0,0,.25); display: flex; align-items: center; justify-content: center; }
 .suggest-card { background: #fff; width: 420px; max-width: 92vw; padding: 16px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.15); }
 .sug-list { list-style: none; padding: 0; margin: 12px 0; display: flex; flex-direction: column; gap: 8px; }
 .sug-list li { display: flex; align-items: center; justify-content: space-between; border: 1px solid #eee; border-radius: 6px; padding: 8px; }
 .sug-sub { color: #777; font-size: 12px; }
 .suggest-card .close { margin-top: 8px; }
+
 /* Month view */
 .month { border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
 .month-head { display: grid; grid-template-columns: repeat(7, 1fr); background: #fafafa; border-bottom: 1px solid #eee; }
@@ -69,16 +78,14 @@ body { margin: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto
 .form-row { display: grid; grid-template-columns: 80px 1fr; align-items: center; gap: 8px; margin-bottom: 8px; }
 .form-row input { padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
 .actions { display: flex; gap: 8px; justify-content: flex-end; }
-/* PATCH: full-width layout + subtler 'today' highlight */
+
+/* ---- Today header chip only (no column background) ---- */
 :root {
-  /* --today-tint: rgba(37, 99, 235, 0.06); */
   --today-pill-bg: #2563eb;
   --today-pill-fg: #ffffff;
 }
-
 .container { max-width: none; width: 100%; margin: 0; padding: 0 12px; }
-
-
+.day-col.today { background: none; }
 .day-head.today .weekday {
   background: var(--today-pill-bg);
   color: var(--today-pill-fg);
@@ -89,21 +96,20 @@ body { margin: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto
   color: var(--today-pill-bg);
   font-weight: 700;
 }
-/* ==== Screen-fit: width + height (all monitors) ==== */
 
-/* Make the viewport sizing predictable */
+/* ==== Screen-fit: width + height (all monitors) ==== */
 html, body, #root { height: 100%; }
 body { margin: 0; overflow-x: hidden; }
 
-/* Top bar actual height; adjust if yours differs */
+/* tune these to your actual topbar/sidebar */
 :root {
   --topbar-h: 56px;
   --page-pad: 12px;
-  --sidebar-w: 320px;   /* tasks panel width */
-  --hour: 48px;         /* row height per hour */
+  --sidebar-w: 340px;
+  --hour: 48px;
 }
 
-/* Fill width without getting “too wide” or causing horizontal scroll */
+/* container never exceeds viewport width */
 .container {
   width: 100%;
   max-width: 100vw;
@@ -111,20 +117,114 @@ body { margin: 0; overflow-x: hidden; }
   padding: 0 var(--page-pad);
 }
 
-/* Two-column layout that fills the viewport height exactly */
+/* two-column grid that fits viewport height */
 .main {
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--sidebar-w);
   gap: 16px;
-  height: calc(100vh - var(--topbar-h) - var(--page-pad)*2);
+  height: calc(100vh - var(--topbar-h) - var(--page-pad) * 2);
 }
 
-/* Ensure children can grow/shrink correctly */
+/* children can shrink/grow + nested scrolling works */
 .left, .right { display: flex; flex-direction: column; min-height: 0; }
 .cal { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
-
-/* The scrollable grid area fills all remaining height */
 .cal-body.cal-scroll { flex: 1 1 auto; height: auto; overflow-y: auto; }
 
-/* Keep hour labels sitting on the boundary line */
+/* sticky sidebar; only inner content scrolls */
+.right {
+  position: sticky;
+  top: var(--topbar-h);
+  height: calc(100vh - var(--topbar-h) - var(--page-pad) * 2);
+  overflow: hidden;
+}
+.tasks-panel { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.tasks-panel .scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+
+/* responsive: stack on small screens */
+@media (max-width: 1100px) {
+  .main { grid-template-columns: 1fr; height: auto; }
+  .right { position: static; height: auto; overflow: visible; margin-top: 12px; }
+}
+
+/* keep hour labels on grid lines */
 .time-cell .hh { top: 0; transform: translateY(-50%); }
+/* ======= HARD ENFORCEMENT: viewport-fit two-column layout ======= */
+/* Put this at the VERY bottom of styles.css */
+
+html, body, #root { height: 100% !important; }
+body { margin: 0 !important; overflow-x: hidden !important; }
+
+:root {
+  --topbar-h: 56px;
+  --page-pad: 12px;
+  --sidebar-w: 340px;
+}
+
+/* Make sure the main wrapper never exceeds the viewport width */
+.container,
+.app > .container {
+  width: 100% !important;
+  max-width: 100vw !important;
+  margin: 0 auto !important;
+  padding-left: var(--page-pad) !important;
+  padding-right: var(--page-pad) !important;
+}
+
+.app .main {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) var(--sidebar-w) !important;
+  gap: 16px !important;
+  align-items: start !important;
+  height: calc(100vh - var(--topbar-h) - (var(--page-pad) * 2)) !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+/* The calendar column stretches; allow nested scroll inside it */
+.app .left { min-height: 0 !important; display: flex !important; flex-direction: column !important; }
+.app .cal { flex: 1 1 auto !important; min-height: 0 !important; display: flex !important; flex-direction: column !important; }
+.app .cal-body.cal-scroll { flex: 1 1 auto !important; height: auto !important; overflow-y: auto !important; }
+
+/* Sidebar stays within viewport; only its inner content scrolls */
+.app .right {
+  position: sticky !important;
+  top: var(--topbar-h) !important;
+  height: calc(100vh - var(--topbar-h) - (var(--page-pad) * 2)) !important;
+  overflow: hidden !important;
+  width: var(--sidebar-w) !important;
+}
+
+.app .tasks-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+/* Ensure the scroll area actually scrolls */
+.app .tasks-panel .scroll {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+}
+
+/* Responsive fallback: stack on narrow screens */
+@media (max-width: 1100px) {
+  .app .main {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+  }
+  .app .right {
+    position: static !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin-top: 12px !important;
+  }
+}
+
+/* Debug toggle (optional): uncomment temporarily to see boxes
+.app .main { outline: 2px solid red; }
+.app .left { outline: 2px dashed orange; }
+.app .right { outline: 2px dashed blue; }
+.app .tasks-panel .scroll { outline: 2px dotted green; } 
+*/

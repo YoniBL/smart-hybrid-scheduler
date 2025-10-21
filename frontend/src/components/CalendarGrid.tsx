@@ -1,6 +1,19 @@
 import React from "react";
-import type { EventItem } from "../types";
-import { addDays } from "../utils";
+
+type EventItem = {
+  eventId: string;
+  title: string;
+  startISO: string;
+  endISO: string;
+  immutable: boolean;
+  source: string;
+};
+
+function addDays(d: Date, n: number): Date {
+  const copy = new Date(d);
+  copy.setDate(copy.getDate() + n);
+  return copy;
+}
 
 type Props = {
   weekStart: Date;
@@ -16,6 +29,7 @@ type Props = {
 
 const HOUR_HEIGHT = 48;
 const SNAP_MIN = 15;
+const DAY_START_MIN = 6 * 60;
 
 function hoursRange(start: number, end: number) {
   return Array.from({ length: end - start }, (_, i) => i + start);
@@ -53,7 +67,7 @@ function packDayEvents(dayEvents: EventItem[]): Placed[] {
 type DragState =
   | { kind: "none" }
   | { kind: "create"; dayIndex: number; startY: number; endY: number }
-  | { kind: "move"; dayIndex: number; eventId: string; offsetMin: number; durationMin: number }
+  | { kind: "move"; originalDayIndex: number; eventId: string; offsetMin: number; durationMin: number }
   | { kind: "resizeTop"; dayIndex: number; eventId: string; anchorEndMin: number }
   | { kind: "resizeBottom"; dayIndex: number; eventId: string; anchorStartMin: number };
 
@@ -62,14 +76,18 @@ export default function CalendarGrid({
   onCreateEvent, onUpdateEvent, onDeleteEvent, getEventColor, onOpenQuickNew
 }: Props) {
   const days = Array.from({ length: daysToShow }, (_, i) => addDays(weekStart, i));
-  const hours = hoursRange(0, 24);
+  const hours = [...hoursRange(6, 24), ...hoursRange(0, 6)];
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const columnsRef = React.useRef<(HTMLDivElement | null)[]>([]);
 
   const [drag, setDrag] = React.useState<DragState>({ kind: "none" });
   const [ghost, setGhost] = React.useState<{dayIndex:number, top:number, height:number} | null>(null);
+  const [panning, setPanning] = React.useState<{active: boolean, startY: number, startScroll: number}>({active:false, startY:0, startScroll:0});
+  const [didPan, setDidPan] = React.useState(false);
+  const draggedRef = React.useRef(false);
+  const PAN_THRESHOLD = 3;
 
-  function yToMinutes(y: number) {
+  function yToMinutesFrom6(y: number) {
     return Math.max(0, Math.min(24*60, Math.round((y / HOUR_HEIGHT) * 60)));
   }
   function roundToSnapMinutes(d: Date, snapMin: number) {
@@ -78,16 +96,41 @@ export default function CalendarGrid({
     const rounded = Math.round(ms / snapMs) * snapMs;
     return new Date(rounded);
   }
+  function applyMinutesFrom6(baseDay: Date, minutesFrom6: number) {
+    const realMin = (minutesFrom6 + DAY_START_MIN) % (24 * 60);
+    const out = new Date(baseDay);
+    if (realMin < DAY_START_MIN) out.setDate(out.getDate() + 1);
+    out.setHours(Math.floor(realMin / 60), realMin % 60, 0, 0);
+    return out;
+  }
+  function minutesFrom6OfDate(d: Date) {
+    const mins = d.getHours() * 60 + d.getMinutes();
+    return (mins - DAY_START_MIN + 24*60) % (24*60);
+  }
+
+  // Helper to find which day column the mouse is over
+  function getDayIndexFromX(clientX: number): number {
+    for (let i = 0; i < columnsRef.current.length; i++) {
+      const col = columnsRef.current[i];
+      if (!col) continue;
+      const rect = col.getBoundingClientRect();
+      if (clientX >= rect.left && clientX <= rect.right) {
+        return i;
+      }
+    }
+    return -1;
+  }
 
   function onGridClick(e: React.MouseEvent, dayIndex: number) {
     if (!onOpenQuickNew) return;
+    if (draggedRef.current) return;
     if ((e.target as HTMLElement).closest(".event")) return;
     const col = columnsRef.current[dayIndex];
     if (!col) return;
     const rect = col.getBoundingClientRect();
     const y = e.clientY - rect.top + (scrollRef.current?.scrollTop || 0);
-    const startMin = yToMinutes(y);
-    const s = new Date(days[dayIndex]); s.setHours(0,0,0,0); s.setMinutes(startMin);
+    const startMinFrom6 = yToMinutesFrom6(y);
+    const s = applyMinutesFrom6(days[dayIndex], startMinFrom6);
     const eDate = new Date(s.getTime() + 60 * 60000);
     const sSnap = roundToSnapMinutes(s, SNAP_MIN);
     const eSnap = roundToSnapMinutes(eDate, SNAP_MIN);
@@ -102,8 +145,8 @@ export default function CalendarGrid({
     if (!col) return;
     const rect = col.getBoundingClientRect();
     const y = e.clientY - rect.top + (scrollRef.current?.scrollTop || 0);
-    const startMin = yToMinutes(y);
-    const s = new Date(days[dayIndex]); s.setHours(0,0,0,0); s.setMinutes(startMin);
+    const startMinFrom6 = yToMinutesFrom6(y);
+    const s = applyMinutesFrom6(days[dayIndex], startMinFrom6);
     const eDate = new Date(s.getTime() + 60 * 60000);
     onOpenQuickNew(toISO(s), toISO(eDate));
   }
@@ -134,11 +177,11 @@ export default function CalendarGrid({
     if (drag.kind !== "create") { setGhost(null); return setDrag({ kind: "none" }); }
     if (!onCreateEvent) { setGhost(null); setDrag({ kind: "none" }); return; }
     const day = days[drag.dayIndex];
-    const startMin = yToMinutes(Math.min(drag.startY, drag.endY));
-    const endMin = yToMinutes(Math.max(drag.startY, drag.endY));
+    const startMin = yToMinutesFrom6(Math.min(drag.startY, drag.endY));
+    const endMin = yToMinutesFrom6(Math.max(drag.startY, drag.endY));
     if (endMin - startMin < 5) { setGhost(null); setDrag({ kind: "none" }); return; }
-    const s = new Date(day); s.setHours(0,0,0,0); s.setMinutes(startMin);
-    const e = new Date(day); e.setHours(0,0,0,0); e.setMinutes(endMin);
+    const s = applyMinutesFrom6(day, startMin);
+    const e = applyMinutesFrom6(day, endMin);
     const sSnap = roundToSnapMinutes(s, SNAP_MIN);
     const eSnap = roundToSnapMinutes(e, SNAP_MIN);
     await onCreateEvent("New event", toISO(sSnap), toISO(eSnap));
@@ -147,19 +190,24 @@ export default function CalendarGrid({
   }
 
   function onEventMouseDown(e: React.MouseEvent, dayIndex: number, ev: EventItem) {
+    e.stopPropagation(); // CRITICAL: Prevent grid mousedown from firing
     const target = e.target as HTMLElement;
     if (target.closest(".ev-actions")) return;
+    if (e.button == 2) return;
+    
+    draggedRef.current = true; // Mark that we're dragging
+    
     const s = toLocal(ev.startISO);
     const eDate = toLocal(ev.endISO);
-    const startMin = s.getHours()*60 + s.getMinutes();
-    const endMin = eDate.getHours()*60 + eDate.getMinutes();
+    const startMin = minutesFrom6OfDate(s);
+    const endMin = minutesFrom6OfDate(eDate);
     const durationMin = endMin - startMin;
 
     const col = columnsRef.current[dayIndex];
     if (!col) return;
     const rect = col.getBoundingClientRect();
     const y = e.clientY - rect.top + (scrollRef.current?.scrollTop || 0);
-    const yMin = yToMinutes(y);
+    const yMin = yToMinutesFrom6(y);
 
     if (Math.abs(yMin - startMin) <= 6) {
       setDrag({ kind: "resizeTop", dayIndex, eventId: ev.eventId, anchorEndMin: endMin });
@@ -169,81 +217,169 @@ export default function CalendarGrid({
       setGhost({ dayIndex, top: (startMin/60)*HOUR_HEIGHT, height: (durationMin/60)*HOUR_HEIGHT });
     } else {
       const offset = yMin - startMin;
-      setDrag({ kind: "move", dayIndex, eventId: ev.eventId, offsetMin: offset, durationMin });
+      setDrag({ kind: "move", originalDayIndex: dayIndex, eventId: ev.eventId, offsetMin: offset, durationMin });
       setGhost({ dayIndex, top: (startMin/60)*HOUR_HEIGHT, height: (durationMin/60)*HOUR_HEIGHT });
     }
   }
 
   function onMouseMoveAll(e: React.MouseEvent) {
+    if (panning.active && scrollRef.current) {
+      const dy = e.clientY - panning.startY;
+      if (Math.abs(dy) > PAN_THRESHOLD) setDidPan(true);
+      scrollRef.current.scrollTop = panning.startScroll - dy;
+    }
     if (drag.kind === "none") return;
-    const col = columnsRef.current[drag.dayIndex];
-    if (!col) return;
-    const rect = col.getBoundingClientRect();
-    const y = e.clientY - rect.top + (scrollRef.current?.scrollTop || 0);
-    const yMin = yToMinutes(y);
 
     if (drag.kind === "move") {
+      // Find which day column the mouse is currently over
+      const targetDayIndex = getDayIndexFromX(e.clientX);
+      if (targetDayIndex === -1) return;
+
+      const col = columnsRef.current[targetDayIndex];
+      if (!col) return;
+      const rect = col.getBoundingClientRect();
+      const y = e.clientY - rect.top + (scrollRef.current?.scrollTop || 0);
+      const yMin = yToMinutesFrom6(y);
+
       let newStartMin = Math.max(0, Math.min(24*60 - drag.durationMin, yMin - drag.offsetMin));
       newStartMin = Math.round(newStartMin / SNAP_MIN) * SNAP_MIN;
-      setGhost({ dayIndex: drag.dayIndex, top: (newStartMin/60)*HOUR_HEIGHT, height: (drag.durationMin/60)*HOUR_HEIGHT });
-    } else if (drag.kind === "resizeTop") {
-      let newStart = Math.min(yMin, drag.anchorEndMin - 5);
-      newStart = Math.round(newStart / SNAP_MIN) * SNAP_MIN;
-      setGhost({ dayIndex: drag.dayIndex, top: (newStart/60)*HOUR_HEIGHT, height: ((drag.anchorEndMin - newStart)/60)*HOUR_HEIGHT });
-    } else if (drag.kind === "resizeBottom") {
-      let newEnd = Math.max(yMin, drag.anchorStartMin + 5);
-      newEnd = Math.round(newEnd / SNAP_MIN) * SNAP_MIN;
-      setGhost({ dayIndex: drag.dayIndex, top: (drag.anchorStartMin/60)*HOUR_HEIGHT, height: ((newEnd - drag.anchorStartMin)/60)*HOUR_HEIGHT });
+      setGhost({ dayIndex: targetDayIndex, top: (newStartMin/60)*HOUR_HEIGHT, height: (drag.durationMin/60)*HOUR_HEIGHT });
+    } else if (drag.kind === "resizeTop" || drag.kind === "resizeBottom") {
+      const col = columnsRef.current[drag.dayIndex];
+      if (!col) return;
+      const rect = col.getBoundingClientRect();
+      const y = e.clientY - rect.top + (scrollRef.current?.scrollTop || 0);
+      const yMin = yToMinutesFrom6(y);
+
+      if (drag.kind === "resizeTop") {
+        let newStart = Math.min(yMin, drag.anchorEndMin - 5);
+        newStart = Math.round(newStart / SNAP_MIN) * SNAP_MIN;
+        setGhost({ dayIndex: drag.dayIndex, top: (newStart/60)*HOUR_HEIGHT, height: ((drag.anchorEndMin - newStart)/60)*HOUR_HEIGHT });
+      } else {
+        let newEnd = Math.max(yMin, drag.anchorStartMin + 5);
+        newEnd = Math.round(newEnd / SNAP_MIN) * SNAP_MIN;
+        setGhost({ dayIndex: drag.dayIndex, top: (drag.anchorStartMin/60)*HOUR_HEIGHT, height: ((newEnd - drag.anchorStartMin)/60)*HOUR_HEIGHT });
+      }
     }
   }
 
   async function onMouseUpAll(e: React.MouseEvent) {
+    if (panning.active) {
+      setPanning({active:false, startY:0, startScroll:0});
+      setTimeout(() => setDidPan(false), 0);
+    }
     if (drag.kind === "none") return;
     const kind = drag.kind;
-    const dayIndex = (drag as any).dayIndex;
-    const day = days[dayIndex];
 
-    const col = columnsRef.current[dayIndex];
-    if (!col) { setGhost(null); setDrag({ kind: "none" }); return; }
-    const rect = col.getBoundingClientRect();
-    const y = e.clientY - rect.top + (scrollRef.current?.scrollTop || 0);
-    const yMin = yToMinutes(y);
+    if (kind === "move") {
+      if (!onUpdateEvent) { 
+        setGhost(null); 
+        setDrag({ kind: "none" }); 
+        setTimeout(() => draggedRef.current = false, 100);
+        return; 
+      }
 
-    if (kind === "move" || kind === "resizeTop" || kind === "resizeBottom") {
-      if (!onUpdateEvent) { setGhost(null); setDrag({ kind: "none" }); return; }
+      const targetDayIndex = getDayIndexFromX(e.clientX);
+      if (targetDayIndex === -1) {
+        setGhost(null); 
+        setDrag({ kind: "none" }); 
+        setTimeout(() => draggedRef.current = false, 100);
+        return;
+      }
 
-      const ev = events.find(x => x.eventId === (drag as any).eventId);
-      if (!ev) { setGhost(null); setDrag({ kind: "none" }); return; }
-      const s = toLocal(ev.startISO);
-      const eDate = toLocal(ev.endISO);
-      let startMin = s.getHours()*60 + s.getMinutes();
-      let endMin = eDate.getHours()*60 + eDate.getMinutes();
+      const targetDay = days[targetDayIndex];
+      const col = columnsRef.current[targetDayIndex];
+      if (!col) { 
+        setGhost(null); 
+        setDrag({ kind: "none" }); 
+        setTimeout(() => draggedRef.current = false, 100);
+        return; 
+      }
 
-      if (kind === "move") {
-        let newStartMin = Math.max(0, Math.min(24*60 - drag.durationMin, yMin - drag.offsetMin));
-        startMin = Math.round(newStartMin / SNAP_MIN) * SNAP_MIN;
-        endMin = startMin + drag.durationMin;
-      } else if (kind === "resizeTop") {
+      const rect = col.getBoundingClientRect();
+      const y = e.clientY - rect.top + (scrollRef.current?.scrollTop || 0);
+      const yMin = yToMinutesFrom6(y);
+
+      const ev = events.find(x => x.eventId === drag.eventId);
+      if (!ev) { 
+        setGhost(null); 
+        setDrag({ kind: "none" }); 
+        setTimeout(() => draggedRef.current = false, 100);
+        return; 
+      }
+
+      let newStartMin = Math.max(0, Math.min(24*60 - drag.durationMin, yMin - drag.offsetMin));
+      const startMin = Math.round(newStartMin / SNAP_MIN) * SNAP_MIN;
+      const endMin = startMin + drag.durationMin;
+
+      const sOut = applyMinutesFrom6(targetDay, startMin);
+      const eOut = applyMinutesFrom6(targetDay, endMin);
+      await onUpdateEvent(ev.eventId, toISO(sOut), toISO(eOut));
+
+      setGhost(null);
+      setDrag({ kind: "none" });
+      setTimeout(() => draggedRef.current = false, 100);
+    } else if (kind === "resizeTop" || kind === "resizeBottom") {
+      if (!onUpdateEvent) { 
+        setGhost(null); 
+        setDrag({ kind: "none" }); 
+        setTimeout(() => draggedRef.current = false, 100);
+        return; 
+      }
+
+      const dayIndex = drag.dayIndex;
+      const day = days[dayIndex];
+      const col = columnsRef.current[dayIndex];
+      if (!col) { 
+        setGhost(null); 
+        setDrag({ kind: "none" }); 
+        setTimeout(() => draggedRef.current = false, 100);
+        return; 
+      }
+
+      const rect = col.getBoundingClientRect();
+      const y = e.clientY - rect.top + (scrollRef.current?.scrollTop || 0);
+      const yMin = yToMinutesFrom6(y);
+
+      const ev = events.find(x => x.eventId === drag.eventId);
+      if (!ev) { 
+        setGhost(null); 
+        setDrag({ kind: "none" }); 
+        setTimeout(() => draggedRef.current = false, 100);
+        return; 
+      }
+
+      let startMin, endMin;
+      if (kind === "resizeTop") {
         let newStart = Math.min(yMin, drag.anchorEndMin - 5);
         startMin = Math.round(newStart / SNAP_MIN) * SNAP_MIN;
         endMin = drag.anchorEndMin;
-      } else if (kind === "resizeBottom") {
+      } else {
         let newEnd = Math.max(yMin, drag.anchorStartMin + 5);
         endMin = Math.round(newEnd / SNAP_MIN) * SNAP_MIN;
         startMin = drag.anchorStartMin;
       }
 
-      const sOut = new Date(day); sOut.setHours(0,0,0,0); sOut.setMinutes(startMin);
-      const eOut = new Date(day); eOut.setHours(0,0,0,0); eOut.setMinutes(endMin);
+      const sOut = applyMinutesFrom6(day, startMin);
+      const eOut = applyMinutesFrom6(day, endMin);
       await onUpdateEvent(ev.eventId, toISO(sOut), toISO(eOut));
-    }
 
-    setGhost(null);
-    setDrag({ kind: "none" });
+      setGhost(null);
+      setDrag({ kind: "none" });
+      setTimeout(() => draggedRef.current = false, 100);
+    } else {
+      setGhost(null);
+      setDrag({ kind: "none" });
+    }
   }
 
   return (
-    <div className="cal" onMouseMove={onMouseMoveAll} onMouseUp={onMouseUpAll}>
+    <div
+      className="cal"
+      onMouseMove={onMouseMoveAll}
+      onMouseUp={onMouseUpAll}
+      onContextMenu={(e) => { if (didPan) { e.preventDefault(); setDidPan(false); } }}
+    >
       <div className="cal-head">
         <div className="time-col" />
         {days.map((d, i) => {
@@ -257,7 +393,15 @@ export default function CalendarGrid({
         })}
       </div>
 
-      <div className="cal-body cal-scroll" ref={scrollRef}>
+      <div
+        className="cal-body cal-scroll"
+        ref={scrollRef}
+        onMouseDown={(e) => {
+          if (e.button === 2 && scrollRef.current) {
+            setPanning({active:true, startY: e.clientY, startScroll: scrollRef.current.scrollTop});
+          }
+        }}
+      >
         <div className="time-col">
           {hours.map(h => (
             <div className="time-cell" key={h}>
@@ -267,17 +411,17 @@ export default function CalendarGrid({
         </div>
 
         {days.map((d, i) => {
+          const dayStart = new Date(d); dayStart.setHours(6,0,0,0);
+          const nextStart = new Date(dayStart); nextStart.setDate(dayStart.getDate() + 1);
           const dayEventsRaw = events.filter(ev => {
-            const s = toLocal(ev.startISO);
-            return s.getFullYear() === d.getFullYear() &&
-                   s.getMonth() === d.getMonth() &&
-                   s.getDate() === d.getDate();
+            const s = toLocal(ev.startISO).getTime();
+            return s >= dayStart.getTime() && s < nextStart.getTime();
           });
           const dayEvents = packDayEvents(dayEventsRaw);
 
           const now = new Date();
           const isToday = d.toDateString() === now.toDateString();
-          const nowTop = ((now.getHours() + now.getMinutes()/60)) * HOUR_HEIGHT;
+          const nowTop = isToday ? ((minutesFrom6OfDate(now)/60) * HOUR_HEIGHT) : -9999;
 
           return (
             <div
@@ -299,7 +443,7 @@ export default function CalendarGrid({
               {dayEvents.map(ev => {
                 const s = toLocal(ev.startISO);
                 const eDate = toLocal(ev.endISO);
-                const top = ((s.getHours() + s.getMinutes()/60)) * HOUR_HEIGHT;
+                const top = (minutesFrom6OfDate(s)/60) * HOUR_HEIGHT;
                 const height = Math.max(20, ((eDate.getTime() - s.getTime())/3600000) * HOUR_HEIGHT);
                 const color = getEventColor ? getEventColor(ev.eventId) : "";
                 const style: React.CSSProperties = {
@@ -319,7 +463,10 @@ export default function CalendarGrid({
                     key={ev.eventId}
                     style={style}
                     onMouseDown={(e) => onEventMouseDown(e, i, ev)}
-                    onClick={() => onEventClick && onEventClick(ev)}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      if (!didPan && onEventClick) onEventClick(ev);
+                    }}
                     title={`${ev.title}`}
                   >
                     <div className="event-title">{ev.title}</div>

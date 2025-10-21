@@ -11,7 +11,7 @@ import { startOfWeek, addDays, toISO, clampToNow } from "./utils";
 import { ToastProvider, Toaster, useToasts } from "./hooks/useToasts";
 import { useEventColors } from "./hooks/useEventColors";
 
-type View = "day" | "week" | "month";
+type View = "week" | "month";
 
 function AppInner() {
   const [view, setView] = useState<View>("week");
@@ -19,7 +19,7 @@ function AppInner() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<EventItem | null>(null);
-  const [newRange, setNewRange] = useState<{s: string, e: string} | null>(null);
+  const [newRange, setNewRange] = useState<{ s: string; e: string } | null>(null);
   const { show } = useToasts();
   const { getColor, setColor } = useEventColors();
 
@@ -28,8 +28,7 @@ function AppInner() {
     try {
       let from = new Date(weekStart);
       let to = new Date(weekStart);
-      if (view === "day") to = addDays(from, 1);
-      else if (view === "week") to = addDays(from, 7);
+      if (view === "week") to = addDays(from, 7);
       else to = addDays(from, 35);
       from = clampToNow(from);
       const evs = await getEvents(toISO(from), toISO(to));
@@ -39,11 +38,12 @@ function AppInner() {
     }
   }
 
-  useEffect(() => { refreshEvents(); }, [weekStart, view]);
+  useEffect(() => {
+    refreshEvents();
+  }, [weekStart, view]);
 
   function nav(delta: number) {
-    if (view === "day") setWeekStart(addDays(weekStart, delta));
-    else if (view === "week") setWeekStart(addDays(weekStart, delta * 7));
+    if (view === "week") setWeekStart(addDays(weekStart, delta * 7));
     else setWeekStart(addDays(weekStart, delta * 30));
   }
 
@@ -51,17 +51,15 @@ function AppInner() {
     <div className="app">
       <header className="topbar">
         <div className="container">
-          <div className="nav" style={{display:"flex", alignItems:"center", gap:8, padding:"10px 0"}}>
-            <h2 style={{marginRight:8}}>Smart Hybrid Scheduler</h2>
+          <div className="nav" style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0" }}>
+            <h2 style={{ marginRight: 8 }}>Smart Hybrid Scheduler</h2>
             <button className="btn ghost" onClick={() => nav(-1)}>◀</button>
-            <span style={{minWidth: 240, textAlign: "center"}}>
-              {view === "day" && weekStart.toLocaleDateString()}
+            <span style={{ minWidth: 240, textAlign: "center" }}>
               {view === "week" && `${weekStart.toLocaleDateString()} – ${addDays(weekStart, 6).toLocaleDateString()}`}
-              {view === "month" && `${weekStart.toLocaleString(undefined, {month: "long", year: "numeric"})}`}
+              {view === "month" && `${weekStart.toLocaleString(undefined, { month: "long", year: "numeric" })}`}
             </span>
             <button className="btn ghost" onClick={() => nav(1)}>▶</button>
             <div style={{ marginLeft: 8, display: "inline-flex", gap: 6 }}>
-              <button className="btn ghost" onClick={() => setView("day")}>Day</button>
               <button className="btn ghost" onClick={() => setView("week")}>Week</button>
               <button className="btn ghost" onClick={() => setView("month")}>Month</button>
             </div>
@@ -71,15 +69,19 @@ function AppInner() {
 
       <div className="container">
         <div className="main">
+          {/* LEFT: Calendar column */}
           <div className="left">
-            <div className="nlp-box"><NlpInput onAddedEvent={refreshEvents} /><button className="btn primary" onClick={refreshEvents}>Refresh</button></div>
+            <div className="nlp-box">
+              <NlpInput onAddedEvent={refreshEvents} />
+                          </div>
+
             {view === "month" ? (
               <MonthGrid monthStart={weekStart} events={events} />
             ) : (
               <CalendarGrid
                 weekStart={weekStart}
                 events={events}
-                daysToShow={view === "day" ? 1 : 7}
+                daysToShow={7}
                 onEventClick={setSelected}
                 onCreateEvent={async (title, s, e) => {
                   await createEvent({ title, startISO: s, endISO: e, immutable: true, source: "app" });
@@ -97,15 +99,20 @@ function AppInner() {
                   show("success", "Event deleted");
                 }}
                 getEventColor={getColor}
-                onOpenQuickNew={(s, e) => setNewRange({s, e})}
+                onOpenQuickNew={(s, e) => setNewRange({ s, e })}
               />
             )}
           </div>
-          <div className="right">
+
+          {/* RIGHT: Tasks sidebar (sticky, inner scroll) */}
+          <aside className="right">
             <div className="card tasks-panel">
-              <TasksPanel onAddedEvent={refreshEvents} />
+              {/* The inner wrapper is what scrolls; the panel itself stays fixed height */}
+              <div className="scroll">
+                <TasksPanel onAddedEvent={refreshEvents} />
+              </div>
             </div>
-          </div>
+          </aside>
         </div>
       </div>
 
