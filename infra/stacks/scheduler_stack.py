@@ -47,6 +47,14 @@ class SchedulerStack(Stack):
             removal_policy=RemovalPolicy.DESTROY,  # dev-friendly; switch to RETAIN for prod
         )
         # GSI used to query by time range (backend expects gsi1pk/gsi1sk)
+       # Add the index the backend expects (name is case-sensitive)
+        table.add_global_secondary_index(
+            index_name="GSI1",
+            partition_key=dynamodb.Attribute(name="gsi1pk", type=dynamodb.AttributeType.STRING),
+            sort_key=dynamodb.Attribute(name="gsi1sk", type=dynamodb.AttributeType.STRING),
+            projection_type=dynamodb.ProjectionType.ALL,
+        )
+
         table.add_global_secondary_index(
             index_name="gsi1",
             partition_key=dynamodb.Attribute(name="gsi1pk", type=dynamodb.AttributeType.STRING),

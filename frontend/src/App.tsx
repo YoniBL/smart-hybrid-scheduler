@@ -10,6 +10,7 @@ import type { EventItem } from "./types";
 import { startOfWeek, addDays, toISO, clampToNow } from "./utils";
 import { ToastProvider, Toaster, useToasts } from "./hooks/useToasts";
 import { useEventColors } from "./hooks/useEventColors";
+import AuthButtons from "./components/AuthButtons";
 
 type View = "week" | "month";
 
@@ -32,7 +33,17 @@ function AppInner() {
       else to = addDays(from, 35);
       from = clampToNow(from);
       const evs = await getEvents(toISO(from), toISO(to));
-      setEvents(evs);
+      if (Array.isArray(evs)) {
+        setEvents(evs);
+      } else {
+        console.warn("getEvents returned non-array:", evs);
+        setEvents([]);
+      }
+    } catch (e: any) {
+      console.error("Failed to load events:", e?.message || e);
+      // Optional: surface toasts if you have them:
+      // show("error", e?.message || "Failed to load events");
+      setEvents([]); // keep UI alive
     } finally {
       setLoading(false);
     }
@@ -63,17 +74,19 @@ function AppInner() {
               <button className="btn ghost" onClick={() => setView("week")}>Week</button>
               <button className="btn ghost" onClick={() => setView("month")}>Month</button>
             </div>
+            <div style={{ marginLeft: "auto" }}>
+              <AuthButtons />
+            </div>
           </div>
         </div>
       </header>
 
       <div className="container">
         <div className="main">
-          {/* LEFT: Calendar column */}
           <div className="left">
             <div className="nlp-box">
               <NlpInput onAddedEvent={refreshEvents} />
-                          </div>
+            </div>
 
             {view === "month" ? (
               <MonthGrid monthStart={weekStart} events={events} />
@@ -104,10 +117,8 @@ function AppInner() {
             )}
           </div>
 
-          {/* RIGHT: Tasks sidebar (sticky, inner scroll) */}
           <aside className="right">
             <div className="card tasks-panel">
-              {/* The inner wrapper is what scrolls; the panel itself stays fixed height */}
               <div className="scroll">
                 <TasksPanel onAddedEvent={refreshEvents} />
               </div>

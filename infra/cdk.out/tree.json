@@ -39,6 +39,22 @@
                     "billingMode": "PAY_PER_REQUEST",
                     "globalSecondaryIndexes": [
                       {
+                        "indexName": "GSI1",
+                        "keySchema": [
+                          {
+                            "attributeName": "gsi1pk",
+                            "keyType": "HASH"
+                          },
+                          {
+                            "attributeName": "gsi1sk",
+                            "keyType": "RANGE"
+                          }
+                        ],
+                        "projection": {
+                          "projectionType": "ALL"
+                        }
+                      },
+                      {
                         "indexName": "gsi1",
                         "keySchema": [
                           {
