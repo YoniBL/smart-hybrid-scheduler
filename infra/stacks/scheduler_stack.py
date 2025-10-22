@@ -98,6 +98,20 @@ class SchedulerStack(Stack):
         # CloudFront OAI (legacy but simple & secure)
         oai = cloudfront.OriginAccessIdentity(self, "SiteOAI")
 
+        # Allow CloudFront OAI to read objects from the bucket
+        site_bucket.add_to_resource_policy(
+            iam.PolicyStatement(
+                sid="AllowCloudFrontOAIRead",
+                actions=["s3:GetObject"],
+                resources=[site_bucket.arn_for_objects("*")],
+                principals=[
+                    iam.CanonicalUserPrincipal(
+                        oai.cloud_front_origin_access_identity_s3_canonical_user_id
+                    )
+                ],
+            )
+        )
+
         # Distribution with SPA fallback
         distribution = cloudfront.Distribution(
             self, "WebDistribution",
@@ -121,6 +135,8 @@ class SchedulerStack(Stack):
                 ),
             ],
         )
+
+
 
 
         # 6) EventBridge — daily placeholder (for future digests)

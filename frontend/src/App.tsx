@@ -52,7 +52,7 @@ function AppInner() {
       <header className="topbar">
         <div className="container">
           <div className="nav" style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0" }}>
-            <h2 style={{ marginRight: 8 }}>Smart Hybrid Scheduler</h2>
+            <h2 style={{ marginRight: 8 }}>Orchestrate</h2>
             <button className="btn ghost" onClick={() => nav(-1)}>◀</button>
             <span style={{ minWidth: 240, textAlign: "center" }}>
               {view === "week" && `${weekStart.toLocaleDateString()} – ${addDays(weekStart, 6).toLocaleDateString()}`}
