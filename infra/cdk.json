@@ -4,7 +4,8 @@
     "@aws-cdk/core:newStyleStackSynthesis": true,
     "stackName": "SmartHybridScheduler",
     "domainName": "",
-    "enableCloudFront": true
+    "enableCloudFront": true,
+    "cognitoDomainPrefix": "yonibl-scheduler-app" 
   }
 }
 

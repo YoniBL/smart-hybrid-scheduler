@@ -1,20 +1,6 @@
 {
   "version": "36.0.0",
   "files": {
-    "fbfafe00ab5d175a948371e0541f808c839151b622c40a853a25011c960fce36": {
-      "source": {
-        "path": "asset.fbfafe00ab5d175a948371e0541f808c839151b622c40a853a25011c960fce36",
-        "packaging": "zip"
-      },
-      "destinations": {
-        "536580887554-il-central-1": {
-          "bucketName": "cdk-hnb659fds-assets-536580887554-il-central-1",
-          "objectKey": "fbfafe00ab5d175a948371e0541f808c839151b622c40a853a25011c960fce36.zip",
-          "region": "il-central-1",
-          "assumeRoleArn": "arn:${AWS::Partition}:iam::536580887554:role/cdk-hnb659fds-file-publishing-role-536580887554-il-central-1"
-        }
-      }
-    },
     "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6": {
       "source": {
         "path": "asset.faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6",
@@ -29,7 +15,21 @@
         }
       }
     },
-    "1fcf341f6d0b0564b3cd4f76626ae79a9c37076a1bc498ddcc38d5358f97e59d": {
+    "fbfafe00ab5d175a948371e0541f808c839151b622c40a853a25011c960fce36": {
+      "source": {
+        "path": "asset.fbfafe00ab5d175a948371e0541f808c839151b622c40a853a25011c960fce36",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "536580887554-il-central-1": {
+          "bucketName": "cdk-hnb659fds-assets-536580887554-il-central-1",
+          "objectKey": "fbfafe00ab5d175a948371e0541f808c839151b622c40a853a25011c960fce36.zip",
+          "region": "il-central-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::536580887554:role/cdk-hnb659fds-file-publishing-role-536580887554-il-central-1"
+        }
+      }
+    },
+    "05ac2f46a2cbe0f4c7891e5485cfe676bd0fe4491c3da9a8fe9c226695c83434": {
       "source": {
         "path": "SmartHybridScheduler.template.json",
         "packaging": "file"
@@ -37,7 +37,7 @@
       "destinations": {
         "536580887554-il-central-1": {
           "bucketName": "cdk-hnb659fds-assets-536580887554-il-central-1",
-          "objectKey": "1fcf341f6d0b0564b3cd4f76626ae79a9c37076a1bc498ddcc38d5358f97e59d.json",
+          "objectKey": "05ac2f46a2cbe0f4c7891e5485cfe676bd0fe4491c3da9a8fe9c226695c83434.json",
           "region": "il-central-1",
           "assumeRoleArn": "arn:${AWS::Partition}:iam::536580887554:role/cdk-hnb659fds-file-publishing-role-536580887554-il-central-1"
         }
