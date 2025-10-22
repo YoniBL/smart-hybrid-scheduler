@@ -147,13 +147,19 @@ class SchedulerStack(Stack):
             "UserPoolClient",
             user_pool=user_pool,
             generate_secret=False,  # SPA must not have a client secret
-            # Direct username/password flows optional if only using Hosted UI; harmless to keep
-            auth_flows=cognito.AuthFlow(user_password=True, user_srp=True),
+            auth_flows=cognito.AuthFlow(
+                user_password=True, 
+                user_srp=True,
+                custom=True  # Enable custom auth flows
+            ),
             prevent_user_existence_errors=True,
             o_auth=cognito.OAuthSettings(
-                flows=cognito.OAuthFlows(authorization_code_grant=True),  # PKCE-capable
-                callback_urls=[localhost, frontend_https],                 # Hosted UI returns here
-                logout_urls=[localhost, frontend_https],                   # Hosted UI logout returns here
+                flows=cognito.OAuthFlows(
+                    authorization_code_grant=True,  # PKCE-capable
+                    implicit_code_grant=True  # Also enable implicit flow for Hosted UI
+                ),
+                callback_urls=[localhost, frontend_https],
+                logout_urls=[localhost, frontend_https],
                 scopes=[cognito.OAuthScope.OPENID, cognito.OAuthScope.EMAIL, cognito.OAuthScope.PROFILE],
             ),
             supported_identity_providers=[cognito.UserPoolClientIdentityProvider.COGNITO],

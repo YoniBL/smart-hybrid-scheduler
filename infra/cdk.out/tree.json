@@ -549,6 +549,7 @@
                   "aws:cdk:cloudformation:type": "AWS::Cognito::UserPoolClient",
                   "aws:cdk:cloudformation:props": {
                     "allowedOAuthFlows": [
+                      "implicit",
                       "code"
                     ],
                     "allowedOAuthFlowsUserPoolClient": true,
@@ -576,6 +577,7 @@
                     ],
                     "explicitAuthFlows": [
                       "ALLOW_USER_PASSWORD_AUTH",
+                      "ALLOW_CUSTOM_AUTH",
                       "ALLOW_USER_SRP_AUTH",
                       "ALLOW_REFRESH_TOKEN_AUTH"
                     ],
@@ -785,7 +787,7 @@
                   "aws:cdk:cloudformation:props": {
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-536580887554-il-central-1",
-                      "s3Key": "fbfafe00ab5d175a948371e0541f808c839151b622c40a853a25011c960fce36.zip"
+                      "s3Key": "fc94cebd00c5857f85e174a19cf4905ef1a79bba7645e732efcef71b99eaedd3.zip"
                     },
                     "environment": {
                       "variables": {

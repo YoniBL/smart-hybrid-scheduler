@@ -132,10 +132,11 @@ export async function suggest(params: {
   windows?: Record<string, [string, string][]>;
 }) {
   const { durationMin, fromISO, toISO, ...rest } = params;
-  return authedFetch('/suggest', {
+  const data = await authedFetch('/suggest', {
     method: 'POST',
-    body: JSON.stringify({ durationMin, from: fromISO, to: toISO, ...rest }),
+    body: JSON.stringify({ durationMin, fromISO, toISO, ...rest }),
   });
+  return data.suggestions || []; // Return just the array
 }
 
 export async function getAvailability() {

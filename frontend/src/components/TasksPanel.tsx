@@ -28,7 +28,7 @@ export default function TasksPanel({ onAddedEvent }: Props) {
     if (!newTitle.trim()) return;
     setLoading(true);
     try {
-      await createTask({ title: newTitle.trim(), durationMin: 60 });
+      await createTask(newTitle.trim(), 60);
       setNewTitle("");
       await refresh();
     } finally { setLoading(false); }
@@ -41,7 +41,11 @@ export default function TasksPanel({ onAddedEvent }: Props) {
       const fromISO = toISO(wk);
       const toISOstr = toISO(addDays(wk, 7));
       // Use the user's currently chosen duration for suggestion (default 60)
-      const res = await suggest(desiredDuration, fromISO, toISOstr);
+      const res = await suggest({
+        durationMin: desiredDuration,
+        fromISO: fromISO,
+        toISO: toISOstr
+      });
       setSugs(res);
       setForTask(t);
     } finally { setLoading(false); }
